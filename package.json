@@ -2,9 +2,11 @@
   "name": "food-ordering-app",
   "version": "1.0.0",
   "description": "",
+  "source": "src/index1.html",
   "scripts": {
     "test": "jest",
-    "start": "parcel src/index1.html",
+    "start": "parcel",
+    "build": "parcel build",
     "watch-test": "jest --watchAll"
   },
   "keywords": [],
