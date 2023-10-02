@@ -10,7 +10,6 @@ const Body = () => {
   const [allrestaurants, setallrestaurants] = useState([]);
   const [searchTxt, setsearchTxt] = useState("");
   const [filteredrestaurants, setfilteredrestaurants] = useState([]);
-  const { user, setuser } = useContext(UserContext);
   useEffect(() => {
     getrestaurants();
   }, []);
@@ -19,9 +18,20 @@ const Body = () => {
       "https://www.swiggy.com/dapi/restaurants/list/v5?lat=22.6842631&lng=75.8761907&page_type=DESKTOP_WEB_LISTING"
     );
     const json = await data.json();
-    console.log(json?.data?.cards[3]?.card?.card?.gridElements?.infoWithStyle?.restaurants);
-    setallrestaurants(json?.data?.cards[3]?.card?.card?.gridElements?.infoWithStyle?.restaurants);
-    setfilteredrestaurants(json?.data?.cards[3]?.card?.card?.gridElements?.infoWithStyle?.restaurants);
+    async function checkData(jsonData) {
+      for (let i = 0; i < jsonData?.data?.cards.length; i++) {
+        let checkData =
+          jsonData?.data?.cards[i]?.card?.card?.gridElements?.infoWithStyle
+            ?.restaurants;
+
+        if (checkData !== undefined) {
+          return checkData;
+        }
+      }
+    }
+    const resData = await checkData(json);
+    setallrestaurants(resData);
+    setfilteredrestaurants(resData);
   }
   const isOnline = useOnline();
   if (!isOnline) {
@@ -32,16 +42,18 @@ const Body = () => {
     <Shimmer />
   ) : (
     <>
-      <div className="bg-violet-200 my-3">
-        <input data-testid="search-input"
+      <div className="bg-violet-200 my-3 px-10">
+        <input
+          data-testid="search-input"
           type="text"
-          className="my-5 p-1 mx-2 px-2"
+          className="my-5 mx-2 px-2 outline-none h-10"
           placeholder="search"
           value={searchTxt}
           onChange={(e) => setsearchTxt(e.target.value)}
         />
-        <button data-testid="search-btn"
-          className="bg-green-300 p-1 px-5"
+        <button
+          data-testid="search-btn"
+          className="bg-green-300 px-5 h-10 transition-all ease-in-out duration-500 text-lg hover:bg-green-500"
           onClick={() => {
             const filtereddata = filterData(searchTxt, allrestaurants);
             setfilteredrestaurants(filtereddata);
@@ -49,32 +61,15 @@ const Body = () => {
         >
           search
         </button>
-        <input
-          value={user.name}
-          onChange={(e) =>
-            setuser({
-              ...user,
-              name: e.target.value,
-            })
-          }
-        ></input>
-        <input
-          value={user.email}
-          onChange={(e) =>
-            setuser({
-              ...user,
-              email: e.target.value,
-            })
-          }
-        ></input>
-        {console.log(user.name)}
-        {console.log(user.email)}
       </div>
       <div className="flex flex-wrap" data-testid="res-list">
         {filteredrestaurants.map((Restaurant) => {
           return (
             <Link to={"/restaurant/" + Restaurant?.info?.id}>
-              <RestaurantCard {...Restaurant?.info} key={Restaurant?.info?.id} />
+              <RestaurantCard
+                {...Restaurant?.info}
+                key={Restaurant?.info?.id}
+              />
             </Link>
           );
         })}
